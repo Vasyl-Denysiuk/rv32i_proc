@@ -1,21 +1,12 @@
 module branch_gen (
-    input  logic [2:0] branch,
-    input  logic       zero,
-    input  logic       carry,
-    input  logic       sign,
-    input  logic       overflow,
-    output logic       taken
+    input  logic [31:0] pc,
+    input  logic [31:0] imm,
+    input  logic [31:0] rs1,
+    input  logic        jalr,
+    output logic [31:0] target
 );
+  // All jumps and branches except jalr are pc-relative
+  always_comb target = jalr ? (rs1 + imm) : (pc + imm);
 
-  always_comb
-    case (branch)
-      3'b000:  taken = zero ? 1 : 0;
-      3'b001:  taken = zero ? 0 : 1;
-      3'b100:  taken = sign ^ overflow;
-      3'b101:  taken = ~(sign ^ overflow);
-      3'b110:  taken = ~carry;
-      3'b111:  taken = carry;
-      default: taken = 0;
-    endcase
 
 endmodule
