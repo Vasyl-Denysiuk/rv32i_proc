@@ -14,7 +14,6 @@ module reg_file (
   assign rs1 = (rs1_num == 0) ? 32'b0 : registers[rs1_num];
   assign rs2 = (rs2_num == 0) ? 32'b0 : registers[rs2_num];
 
-  always_ff @(posedge clk)
-    if (write && rd_num != 0) registers[rd_num] <= data;
+  always_ff @(posedge clk) if (write && rd_num != 0) registers[rd_num] <= data;
 
 endmodule

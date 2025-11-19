@@ -19,15 +19,17 @@ module control_unit (
     alu_op       = 4'b0000;
     alu_in1      = 0;
     alu_in2      = 2'b00;
-    branch       = 3'b011;
-    jump         = 0;
+    branch       = 3'b010;
+    jalr         = 0;
     mem_read     = 0;
     mem_write    = 0;
     reg_write    = 0;
     mem_to_reg   = 0;
     mem_size     = 2'b10;
     mem_unsigned = 0;
-    unique case (opcode)
+
+
+    unique case (opcode)  // pragma full_case
       7'b0110011: begin  // R-R A/L ops
         reg_write = 1;
         alu_op    = {funct7[5], funct3};

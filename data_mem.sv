@@ -1,16 +1,16 @@
-module data_mem (
+module data_mem #(
+    parameter int MEM_DEPTH = 1024,
+    parameter int MEM_WIDTH = 32
+) (
     input  logic        clk,
     input  logic [31:0] addr,
     input  logic [31:0] data,
     input  logic        read,
     input  logic        write,
-    input  logic [ 1:0] size,       // 00=byte, 01=halfword, 10=word
-    input  logic        _unsigned,  // 1=unsigned, 0=signed
+    input  logic [ 1:0] size,   // 00=byte, 01=halfword, 10=word
+    input  logic        sign,   // 1=unsigned, 0=signed
     output logic [31:0] out
 );
-
-  parameter int MEM_DEPTH = 1024;
-  parameter int MEM_WIDTH = 32;
 
   (* ram_style = "block" *) logic [MEM_WIDTH-1:0] mem[MEM_DEPTH-1];
 
@@ -27,22 +27,22 @@ module data_mem (
         2'b00: begin
           unique case (byte_sel)
             2'b00:
-            out = _unsigned ? {24'b0, mem[w_addr][7:0]} : {{24{mem[w_addr][7]}}, mem[w_addr][7:0]};
+            out = sign ? {24'b0, mem[w_addr][7:0]} : {{24{mem[w_addr][7]}}, mem[w_addr][7:0]};
             2'b01:
-            out = _unsigned ? {24'b0,mem[w_addr][15:8]}:{{24{mem[w_addr][15]}},mem[w_addr][15:8]};
+            out = sign ? {24'b0, mem[w_addr][15:8]} : {{24{mem[w_addr][15]}}, mem[w_addr][15:8]};
             2'b10:
-            out = _unsigned ? {24'b0,mem[w_addr][23:16]}:{{24{mem[w_addr][23]}},mem[w_addr][23:16]};
+            out = sign ? {24'b0, mem[w_addr][23:16]} : {{24{mem[w_addr][23]}}, mem[w_addr][23:16]};
             2'b11:
-            out = _unsigned ? {24'b0,mem[w_addr][31:24]}:{{24{mem[w_addr][31]}},mem[w_addr][31:24]};
+            out = sign ? {24'b0, mem[w_addr][31:24]} : {{24{mem[w_addr][31]}}, mem[w_addr][31:24]};
           endcase
         end
 
         2'b01: begin
           unique case (byte_sel[1])
             1'b0:
-            out = _unsigned ? {16'b0,mem[w_addr][15:0]}:{{16{mem[w_addr][15]}},mem[w_addr][15:0]};
+            out = sign ? {16'b0, mem[w_addr][15:0]} : {{16{mem[w_addr][15]}}, mem[w_addr][15:0]};
             1'b1:
-            out = _unsigned ? {16'b0,mem[w_addr][31:16]}:{{16{mem[w_addr][31]}},mem[w_addr][31:16]};
+            out = sign ? {16'b0, mem[w_addr][31:16]} : {{16{mem[w_addr][31]}}, mem[w_addr][31:16]};
           endcase
         end
 

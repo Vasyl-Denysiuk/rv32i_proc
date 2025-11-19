@@ -1,12 +1,12 @@
 module alu (
-    input logic [3:0] ctl,
-    input logic [31:0] in_1,
-    input logic [31:0] in_2,
+    input  logic [ 3:0] ctl,
+    input  logic [31:0] in_1,
+    input  logic [31:0] in_2,
     output logic [31:0] out,
-    output logic zero,
-    output logic carry,
-    output logic overflow,
-    output logic sign
+    output logic        zero,
+    output logic        carry,
+    output logic        overflow,
+    output logic        sign
 );
 
   logic [ 4:0] shamt = in_2[4:0];

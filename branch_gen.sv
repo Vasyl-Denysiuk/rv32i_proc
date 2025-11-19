@@ -8,5 +8,4 @@ module branch_gen (
   // All jumps and branches except jalr are pc-relative
   always_comb target = jalr ? (rs1 + imm) : (pc + imm);
 
-
 endmodule
