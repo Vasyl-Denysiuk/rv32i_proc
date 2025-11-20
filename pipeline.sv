@@ -11,6 +11,8 @@ module pipeline (
   logic [31:0] idex_pc;
   logic [31:0] idex_rs1;
   logic [31:0] idex_rs2;
+  logic [ 4:0] idex_rs1_num;
+  logic [ 4:0] idex_rs2_num;
   logic [31:0] idex_imm;
   logic [ 4:0] idex_rd;
   logic [ 3:0] idex_alu_op;
@@ -29,8 +31,6 @@ module pipeline (
   logic [31:0] exmem_alu_out;
   logic [31:0] exmem_rs2;
   logic [ 4:0] exmem_rd;
-  logic        exmem_branch_taken;
-  logic [31:0] exmem_branch_target;
   logic        exmem_mem_read;
   logic        exmem_mem_write;
   logic        exmem_reg_write;
@@ -48,12 +48,22 @@ module pipeline (
   // IF stage
   logic [31:0] pc;
   logic [31:0] instr;
+  logic        bubble;
+
+  hazard_detection hdu_inst (
+      .idex_mem_read(idex_mem_read),
+      .idex_rd(idex_rd),
+      .ifid_rs1(ifid_instr[19:15]),
+      .ifid_rs2(ifid_instr[24:20]),
+      .bubble(bubble)
+  );
 
   pc pc_inst (
       .rst(rst),
       .clk(clk),
-      .taken(exmem_branch_taken),
-      .target(exmem_branch_target),
+      .stall(bubble),
+      .taken(branch_taken),
+      .target(branch_target),
       .pc_out(pc)
   );
 
@@ -64,10 +74,10 @@ module pipeline (
   );
 
   always_ff @(posedge clk) begin
-    if (rst || exmem_branch_taken) begin
+    if (rst || branch_taken) begin
       ifid_pc    <= 0;
       ifid_instr <= 32'h00000013; // ADDI x0,x0,0 (NOP)
-    end else begin
+    end else if (~bubble) begin
       ifid_pc    <= pc;
       ifid_instr <= instr;
     end
@@ -119,10 +129,12 @@ module pipeline (
   );
 
   always_ff @(posedge clk) begin
-    if (rst || exmem_branch_taken) begin
+    if (rst || branch_taken || bubble) begin
       idex_pc           <= 0;
       idex_rs1          <= 0;
       idex_rs2          <= 0;
+      idex_rs1_num      <= 0;
+      idex_rs2_num      <= 0;
       idex_imm          <= 0;
       idex_rd           <= 0;
       idex_alu_op       <= 0;
@@ -140,6 +152,8 @@ module pipeline (
       idex_pc           <= ifid_pc;
       idex_rs1          <= rs1_val;
       idex_rs2          <= rs2_val;
+      idex_rs1_num      <= ifid_instr[19:15];
+      idex_rs2_num      <= ifid_instr[24:20];
       idex_imm          <= imm;
       idex_rd           <= ifid_instr[11:7];
       idex_alu_op       <= alu_op;
@@ -157,14 +171,25 @@ module pipeline (
   end
 
   // EX stage
+  logic [31:0] forward_rs1, forward_rs2;
   logic [31:0] alu_in1, alu_in2, alu_out;
   logic alu_zero, alu_carry, alu_overflow, alu_sign;
+  logic [1:0] forward_a, forward_b;
 
-  assign alu_in1 = idex_alu_in1 ? idex_pc : idex_rs1;
+  forward_control fc_inst (
+      .idex_rs1(idex_rs1_num),
+      .idex_rs2(idex_rs2_num),
+      .*
+  );
+
+  assign forward_rs1 = forward_a == 2'b00 ? idex_rs1 : forward_a == 2'b01 ? exmem_alu_out : memwb_alu_out;
+  assign forward_rs2 = forward_b == 2'b00 ? idex_rs2 : forward_b == 2'b01 ? exmem_alu_out : memwb_alu_out;
+
+  assign alu_in1 = idex_alu_in1 ? idex_pc : forward_rs1;
 
   always_comb
     case (idex_alu_in2)
-      2'b00:   alu_in2 = idex_rs2;
+      2'b00:   alu_in2 = forward_rs2;
       2'b01:   alu_in2 = idex_imm;
       2'b10:   alu_in2 = 32'd4;
       default: alu_in2 = 32'd0;
@@ -195,23 +220,21 @@ module pipeline (
   branch_gen bg_inst (
       .pc(idex_pc),
       .imm(idex_imm),
-      .rs1(idex_rs1),
+      .rs1(forward_rs1),
       .jalr(idex_jalr),
       .target(branch_target)
   );
 
   always_ff @(posedge clk) begin
-    exmem_alu_out       <= alu_out;
-    exmem_rs2           <= idex_rs2;
-    exmem_rd            <= idex_rd;
-    exmem_branch_taken  <= branch_taken;
-    exmem_branch_target <= branch_target;
-    exmem_mem_read      <= idex_mem_read;
-    exmem_mem_write     <= idex_mem_write;
-    exmem_reg_write     <= idex_reg_write;
-    exmem_mem_to_reg    <= idex_mem_to_reg;
-    exmem_mem_size      <= idex_mem_size;
-    exmem_mem_unsigned  <= idex_mem_unsigned;
+    exmem_alu_out <= alu_out;
+    exmem_rs2 <= forward_b == 2'b00 ? idex_rs2 : forward_b == 2'b01 ? exmem_alu_out : memwb_alu_out;
+    exmem_rd <= idex_rd;
+    exmem_mem_read <= idex_mem_read;
+    exmem_mem_write <= idex_mem_write;
+    exmem_reg_write <= idex_reg_write;
+    exmem_mem_to_reg <= idex_mem_to_reg;
+    exmem_mem_size <= idex_mem_size;
+    exmem_mem_unsigned <= idex_mem_unsigned;
   end
 
   // MEM stage
