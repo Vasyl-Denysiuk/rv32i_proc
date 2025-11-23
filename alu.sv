@@ -14,7 +14,10 @@ module alu (
   logic [32:0] diff;
 
   always_comb begin
-    carry = 0;
+    sum      = '0;
+    diff     = '0;
+    out      = '0;
+    carry    = 0;
     overflow = 0;
     case (ctl)
       4'b0000: begin

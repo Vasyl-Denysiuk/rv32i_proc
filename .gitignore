@@ -1,3 +1,8 @@
 /synthesis
 /.nvim
 pipeline.json
+program.hex
+sim_main.cpp
+run_pipeline.sh
+waveform.vcd
+/obj_dir

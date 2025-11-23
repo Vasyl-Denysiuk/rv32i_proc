@@ -143,7 +143,7 @@ module pipeline (
       idex_alu_op       <= 0;
       idex_alu_in2      <= 0;
       idex_alu_in1      <= 0;
-      idex_branch       <= 0;
+      idex_branch       <= 3'd2;
       idex_jalr         <= 0;
       idex_mem_read     <= 0;
       idex_mem_write    <= 0;
@@ -152,6 +152,7 @@ module pipeline (
       idex_mem_size     <= 0;
       idex_mem_unsigned <= 0;
     end else begin
+      $display("%0t | IF: PC=%h, Instr=%h", $time, ifid_pc, ifid_instr);
       idex_pc           <= ifid_pc;
       idex_rs1          <= rs1_val;
       idex_rs2          <= rs2_val;
@@ -227,6 +228,8 @@ module pipeline (
   );
 
   always_ff @(posedge clk) begin
+    $display("%0t | ID: rs1=%0d rs2=%0d rd=%0d imm=%h alu_op=%0d", $time, idex_rs1_num,
+             idex_rs2_num, idex_rd, idex_imm, idex_alu_op);
     exmem_alu_out <= alu_out;
     exmem_rs2 <= forward_b == 2'b00 ? idex_rs2 : forward_b == 2'b01 ? exmem_alu_out : memwb_alu_out;
     exmem_rd <= idex_rd;
@@ -253,6 +256,7 @@ module pipeline (
   );
 
   always_ff @(posedge clk) begin
+    $display("%0t | EX: ALU_out=%h, rd=%0d", $time, exmem_alu_out, exmem_rd);
     memwb_alu_out    <= exmem_alu_out;
     memwb_mem_out    <= mem_out;
     memwb_rd         <= exmem_rd;

@@ -29,7 +29,7 @@ module control_unit (
     mem_unsigned = 0;
 
 
-    unique case (opcode)  // pragma full_case
+    unique case (opcode)
       7'b0110011: begin  // R-R A/L ops
         reg_write = 1;
         alu_op    = {funct7[5], funct3};
@@ -88,6 +88,7 @@ module control_unit (
         alu_in1   = 1;
         alu_in2   = 2'b01;
       end
+      default: ;
     endcase
   end
 
