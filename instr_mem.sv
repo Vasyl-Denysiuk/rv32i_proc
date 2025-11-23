@@ -2,7 +2,6 @@ module instr_mem #(
     parameter int MEM_DEPTH = 1024,
     parameter int MEM_WIDTH = 32
 ) (
-    input  logic        clk,
     input  logic [31:0] pc,
     output logic [31:0] instr
 );
@@ -16,6 +15,6 @@ module instr_mem #(
   logic [$clog2(MEM_DEPTH)-1:0] pc_index;
   always_comb pc_index = pc[$clog2(MEM_DEPTH)+1:2];
 
-  always_ff @(posedge clk) instr <= mem[pc_index];
+  always_comb instr = mem[pc_index];
 
 endmodule

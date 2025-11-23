@@ -50,6 +50,10 @@ module pipeline (
   logic [31:0] instr;
   logic        bubble;
 
+  // required for compilation, assigned later
+  logic        branch_taken;
+  logic [31:0] branch_target;
+
   hazard_detection hdu_inst (
       .idex_mem_read(idex_mem_read),
       .idex_rd(idex_rd),
@@ -68,7 +72,6 @@ module pipeline (
   );
 
   instr_mem imem (
-      .clk(clk),
       .pc(pc),
       .instr(instr)
   );
@@ -206,7 +209,6 @@ module pipeline (
       .sign(alu_sign)
   );
 
-  logic branch_taken;
   branch_control bc_inst (
       .branch(idex_branch),
       .zero(alu_zero),
@@ -216,7 +218,6 @@ module pipeline (
       .taken(branch_taken)
   );
 
-  logic [31:0] branch_target;
   branch_gen bg_inst (
       .pc(idex_pc),
       .imm(idex_imm),
