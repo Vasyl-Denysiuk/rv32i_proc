@@ -1,11 +1,12 @@
+import pkg::*;
 module branch_gen (
-    input  logic [31:0] pc,
-    input  logic [31:0] imm,
-    input  logic [31:0] rs1,
-    input  logic        jalr,
-    output logic [31:0] target
+    input  logic [XLEN-1:0] pc,
+    input  logic [XLEN-1:0] imm,
+    input  logic [XLEN-1:0] rs1,
+    input  logic            is_jalr,
+    output logic [XLEN-1:0] target
 );
   // All jumps and branches except jalr are pc-relative
-  always_comb target = jalr ? (rs1 + imm) : (pc + imm);
+  assign target = is_jalr ? (rs1 + imm) & ~XLEN'(1) : (pc + imm);
 
 endmodule

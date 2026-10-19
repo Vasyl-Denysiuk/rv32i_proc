@@ -1,19 +1,21 @@
+import pkg::*;
+
 module reg_file (
-    input  logic        clk,
-    input  logic [ 4:0] rs1_num,
-    input  logic [ 4:0] rs2_num,
-    input  logic [ 4:0] rd_num,
-    input  logic [31:0] data,
-    input  logic        write,
-    output logic [31:0] rs1,
-    output logic [31:0] rs2
+    input  logic                    clk,
+    input  logic [REGFILE_BITS-1:0] rs1_num,
+    input  logic [REGFILE_BITS-1:0] rs2_num,
+    input  logic [REGFILE_BITS-1:0] rd_num,
+    input  logic [        XLEN-1:0] data,
+    input  logic                    wb,
+    output logic [        XLEN-1:0] rs1,
+    output logic [        XLEN-1:0] rs2
 );
 
-  logic [31:0] registers[1:31];  // x1-x31 register, x0 is asserted to 0
+  logic [XLEN-1:0] registers[0:2**REGFILE_BITS-1];
 
-  assign rs1 = (rs1_num == 0) ? 32'b0 : registers[rs1_num];
-  assign rs2 = (rs2_num == 0) ? 32'b0 : registers[rs2_num];
+  assign rs1 = (rs1_num == 0) ? 32'b0 : (wb && rd_num == rs1_num) ? data : registers[rs1_num];
+  assign rs2 = (rs2_num == 0) ? 32'b0 : (wb && rd_num == rs2_num) ? data : registers[rs2_num];
 
-  always_ff @(posedge clk) if (write && rd_num != 0) registers[rd_num] <= data;
+  always_ff @(posedge clk) if (wb && rd_num != 0) registers[rd_num] <= data;
 
 endmodule

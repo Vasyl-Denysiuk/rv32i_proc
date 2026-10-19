@@ -1,12 +1,15 @@
+import pkg::*;
+
 module imm_gen (
-    input  logic [31:0] instr,
-    output logic [31:0] imm
+    input  logic [XLEN-1:0] instr,
+    output logic [XLEN-1:0] imm
 );
 
-  logic [6:0] opcode = instr[6:0];
+  logic [6:0] opcode;
+  assign opcode = instr[6:0];
 
   always_comb
-    unique case (opcode)
+    case (opcode)
       // I-type imm
       7'b0000011, 7'b0010011, 7'b1100111: imm = {{21{instr[31]}}, instr[30:20]};
       // S-type
@@ -18,7 +21,7 @@ module imm_gen (
       // J-type
       7'b1101111: imm = {{12{instr[31]}}, instr[19:12], instr[20], instr[30:21], 1'b0};
 
-      default: imm = 32'b0;
+      default: imm = '0;
     endcase
 
 endmodule

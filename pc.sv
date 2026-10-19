@@ -1,17 +1,16 @@
+import pkg::*;
+
 module pc #(
-    parameter logic [31:0] INITIAL_PC = 32'b0
+    parameter logic [XLEN-1:0] INITIAL_PC = '0
 ) (
-    input  logic        rst,
-    input  logic        clk,
-    input  logic        stall,
-    input  logic        taken,
-    input  logic [31:0] target,
-    output logic [31:0] pc_out
+    input  logic            rst_n,
+    input  logic            clk,
+    input  logic            stall,
+    input  logic            taken,
+    input  logic [XLEN-1:0] target,
+    output logic [XLEN-1:0] pc,
+    output logic [XLEN-1:0] next_pc
 );
-
-  always_ff @(posedge clk)
-    if (rst) pc_out <= INITIAL_PC;
-    else if (taken) pc_out <= target;
-    else if (~stall) pc_out <= pc_out + 32'd4;
-
+  assign next_pc = !rst_n ? INITIAL_PC : taken ? target : stall ? pc : pc + XLEN'(4);
+  always_ff @(posedge clk) pc <= next_pc;
 endmodule

@@ -1,20 +1,22 @@
+import pkg::*;
+
 module instr_mem #(
-    parameter int MEM_DEPTH = 1024,
-    parameter int MEM_WIDTH = 32
+    parameter DEPTH = 1024
 ) (
-    input  logic [31:0] pc,
-    output logic [31:0] instr
+    input logic clk,
+    input logic [XLEN-1:0] addr,
+    output logic [XLEN-1:0] instr
 );
 
-  (* ram_style = "block" *) logic [MEM_WIDTH-1:0] mem[MEM_DEPTH-1];
+  logic [XLEN-1:0] ram[DEPTH];
+  logic [$clog2(DEPTH)-1:0] r_addr;
+
+  assign r_addr = addr[XLEN-1:$clog2(XLEN/8)];
 
   initial begin
-    $readmemh("program.hex", mem);
+    $readmemh("program.hex", ram);
   end
 
-  logic [$clog2(MEM_DEPTH)-1:0] pc_index;
-  always_comb pc_index = pc[$clog2(MEM_DEPTH)+1:2];
-
-  always_comb instr = mem[pc_index];
+  always @(posedge clk) instr <= ram[r_addr];
 
 endmodule
