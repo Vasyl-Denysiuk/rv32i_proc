@@ -9,15 +9,17 @@ package pkg;
   } forward_t;
 
   typedef enum logic [6:0] {
-    REG_OP = 7'b0110011,
-    IMM_OP = 7'b0010011,
-    LOAD   = 7'b0000011,
-    STORE  = 7'b0100011,
-    BRANCH = 7'b1100011,
-    JAL    = 7'b1101111,
-    JALR   = 7'b1100111,
-    LUI    = 7'b0110111,
-    AUIPC  = 7'b0010111
+    REG_OP   = 7'b0110011,
+    IMM_OP   = 7'b0010011,
+    LOAD     = 7'b0000011,
+    STORE    = 7'b0100011,
+    BRANCH   = 7'b1100011,
+    JAL      = 7'b1101111,
+    JALR     = 7'b1100111,
+    LUI      = 7'b0110111,
+    AUIPC    = 7'b0010111,
+    MISC_MEM = 7'b0001111,
+    SYSTEM   = 7'b1110011
   } opcode_t;
 
   typedef enum logic [3:0] {
