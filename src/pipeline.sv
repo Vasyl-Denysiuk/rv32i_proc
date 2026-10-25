@@ -1,16 +1,16 @@
 import pkg::*;
 
 module pipeline (
-    input  logic              clk,
-    input  logic              rst_n,
-    output logic [  XLEN-1:0] imem_addr,
-    input  logic [      31:0] imem_rdata,
-    output logic [  XLEN-1:0] dmem_addr,
-    output logic [  XLEN-1:0] dmem_wdata,
-    output logic [XLEN/8-1:0] dmem_be,
-    output logic              dmem_re,
-    output logic [       1:0] dmem_size,
-    input  logic [  XLEN-1:0] dmem_rdata,
+    input  logic                    clk,
+    input  logic                    rst_n,
+    output logic [        XLEN-1:0] imem_addr,
+    input  logic [            31:0] imem_rdata,
+    output logic [        XLEN-1:0] dmem_addr,
+    output logic [        XLEN-1:0] dmem_wdata,
+    output logic [      XLEN/8-1:0] dmem_be,
+    output logic                    dmem_re,
+    output logic [             1:0] dmem_size,
+    input  logic [        XLEN-1:0] dmem_rdata,
     // RVFI ports
     output logic                    rvfi_valid,
     output logic [            63:0] rvfi_order,
@@ -111,9 +111,9 @@ module pipeline (
   logic            branch_taken;
   logic [XLEN-1:0] branch_target;
 
-  logic ex_trap;
-  logic flush;
-  logic halted;
+  logic            ex_trap;
+  logic            flush;
+  logic            halted;
 
   hazard_detection hd_i (
       .idex_mem_read(idex_mem_read),
@@ -200,7 +200,7 @@ module pipeline (
   always_ff @(posedge clk) begin
     if (!rst_n || flush || halted || bubble) begin
       idex_valid        <= 0;
-      idex_instr        <= 32'h00000013; // ADDI x0,x0,0 (NOP)
+      idex_instr        <= 32'h00000013;  // ADDI x0,x0,0 (NOP)
       idex_pc           <= 0;
       idex_rs1          <= 0;
       idex_rs2          <= 0;
@@ -316,7 +316,7 @@ module pipeline (
 
   assign target_misaligned = branch_taken && branch_target[1:0] != 0;
   assign ex_trap = idex_valid && (idex_trap || mem_misaligned || target_misaligned);
-  assign flush   = branch_taken || ex_trap;
+  assign flush = branch_taken || ex_trap;
 
   always_ff @(posedge clk) begin
     if (!rst_n) halted <= 0;
@@ -429,14 +429,14 @@ module pipeline (
   end
 
   logic rd_written;
-  assign rd_written = memwb_reg_write && memwb_rd != 0;
+  assign rd_written     = memwb_reg_write && memwb_rd != 0;
 
   assign rvfi_valid     = memwb_valid;
   assign rvfi_order     = order;
   assign rvfi_insn      = memwb_instr;
   assign rvfi_trap      = memwb_trap;
   assign rvfi_halt      = memwb_trap;  // trapping instruction is last before halt
-  assign rvfi_intr      = 0;           // no trap handler is ever entered
+  assign rvfi_intr      = 0;  // no trap handler is ever entered
   assign rvfi_mode      = 2'd3;  // M-mode
   assign rvfi_ixl       = 2'd1;  // 32-bit
   assign rvfi_rs1_addr  = memwb_rs1_num;

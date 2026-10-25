@@ -13,9 +13,9 @@ module control_unit (
     output logic                  mem_write,
     output logic                  reg_write,
     output logic                  mem_to_reg,
-    output logic            [1:0] mem_size,     // 00=byte, 01=halfword, 10=word
-    output logic                  mem_unsigned, // 1=unsigned, 0=signed
-    output logic                  trap          // illegal instruction, ECALL or EBREAK
+    output logic            [1:0] mem_size,      // 00=byte, 01=halfword, 10=word
+    output logic                  mem_unsigned,  // 1=unsigned, 0=signed
+    output logic                  trap           // illegal instruction, ECALL or EBREAK
 );
 
   always_comb begin
